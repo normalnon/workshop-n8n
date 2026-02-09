@@ -1,0 +1,350 @@
+{
+  "name": "email-monitoring",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -208,
+        0
+      ],
+      "id": "21089ec2-fae5-4d7b-a63a-10140063debe",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "tQYJL9oFwFsJjQoQ",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=analyze the given email and processes as following\n##task\n* analyze email context in both **subject** and **message**\n* categorize the context to level of urgency\n  * **critical** - เป็นเรื่องที่ต้องรีบจัดการอย่างเร่งด่วน หากช้าอาจเกิดความเสียหายได้\n  * **important** - เนื้อหาเกี่ยวกับสิ่งส่งมอบ การ deal กับลูกค้า ผู้เกี่ยวข้องกับบริษัท การติดต่องาน\n  * **normal** - เรื่องทั่วไป\n  * **later** - spam โฆษณาต่าง ๆ ที่ไม่เกี่ยวข้องกับสิ่งพิมพ์\n* summarize the context to its core idea\n\n\n##output format\n* json format without unnecessary explanation\n* the json must contain these keys\n  * summary - summarized context\n  * urgent - categorized level of urgency \n  * reason - reason why the urgent level is defined\n\n##intput\nsubject:\n{{ $json.Subject }}\n\nmessage:\n{{ $json.snippet }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        16
+      ],
+      "id": "37ae854b-b15d-4137-9cb2-157c149123cc",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "hosted_vllm/ptm-gpt-oss-120b",
+          "mode": "list",
+          "cachedResultName": "hosted_vllm/ptm-gpt-oss-120b"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        400,
+        256
+      ],
+      "id": "b9163c11-443c-4c8c-a4e9-df6a46722929",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "5Z45ZHmjbel8bigE",
+          "name": "ptm-gpt-oss-120b"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "01ca725d-8b2e-432c-86d0-7362147af9d3",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        16
+      ],
+      "id": "32842571-1886-4d2c-b3ea-e70412f9826b",
+      "name": "Wait",
+      "webhookId": "a249edc1-115c-43f2-89b2-6903076560c2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ดึงข้อมูลผลลัพธ์จาก AI Agent Node\n// items[0].json.output คือ path ไปยังข้อมูล string ที่มีปัญหา\nconst rawOutput = items[0].json.output;\n\n// 1. ทำความสะอาด String\n// ใช้ Regular Expression เพื่อลบ ```json ที่อยู่ตอนต้น และ ``` ที่อยู่ตอนท้าย\n// \\s* คือการเผื่อกรณีมี space หรือบรรทัดใหม่แทรกเข้ามา\n// .replace(/^```json\\s*/, '') -> ลบส่วนหัว\n// .replace(/\\s*```$/, '') -> ลบส่วนท้าย\n// .trim() -> ลบช่องว่างที่ไม่จำเป็นที่หัวและท้ายของ string ทั้งหมด\nconst cleanedString = rawOutput\n  .replace(/^```json\\s*/, '')\n  .replace(/\\s*```$/, '')\n  .trim();\n\n// 2. แปลง (Parse) String ที่สะอาดแล้วให้เป็น JSON Object\n// ใช้ try...catch เพื่อดักจับ Error กรณีที่ AI สร้างข้อมูลที่ยังไม่ใช่ JSON ที่สมบูรณ์\ntry {\n  return JSON.parse(cleanedString);\n  // const jsonObject = JSON.parse(cleanedString);\n\n  // 3. ส่งข้อมูล JSON Object ที่สมบูรณ์แล้วออกไป\n  // ในที่นี้เราจะสร้าง key ใหม่ชื่อว่า 'cleanJson' เพื่อเก็บผลลัพธ์\n  // หรือจะเขียนทับข้อมูลเดิมไปเลยก็ได้\n  // items[0].json.cleanJson = jsonObject;\n\n} catch (error) {\n  // กรณีที่เกิด Error ในการ Parse JSON\n  // คุณสามารถจัดการ Error ได้ที่นี่ เช่น ส่งแจ้งเตือน หรือหยุด Workflow\n  console.error(\"ไม่สามารถ Parse JSON ได้:\", error);\n  items[0].json.error = \"Invalid JSON format after cleaning\";\n  // อาจจะ return [] เพื่อหยุดการทำงานของ branch นี้ก็ได้\n}\n\n// ส่งข้อมูลที่ถูกปรับปรุงแล้วไปยัง Node ต่อไป\n// return items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        16
+      ],
+      "id": "cae478c7-dde0-4200-bfd6-44cc4ede1e90",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1kFqW0UKb3qCipnhAIqJWMCWyZnXg3eh3jxYHI_gNCrc/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kFqW0UKb3qCipnhAIqJWMCWyZnXg3eh3jxYHI_gNCrc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ Date(parseInt( $('Gmail Trigger').item.json.internalDate)).toString().split(' ').slice(0, 4).join(' ') }}",
+            "time": "={{ Date(parseInt( $('Gmail Trigger').item.json.internalDate)).toString().split(' ')[4] }}",
+            "message": "={{ $('Gmail Trigger').item.json.snippet }}",
+            "from": "={{ $('Gmail Trigger').item.json.From }}",
+            "to": "={{ $('Gmail Trigger').item.json.To }}",
+            "subject": "={{ $('Gmail Trigger').item.json.Subject }}",
+            "summary": "={{ $json.summary }}",
+            "urgent": "={{ $json.urgent }}",
+            "reason": "={{ $json.reason }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "time",
+              "displayName": "time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "subject",
+              "displayName": "subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "from",
+              "displayName": "from",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "to",
+              "displayName": "to",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "urgent",
+              "displayName": "urgent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reason",
+              "displayName": "reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1024,
+        16
+      ],
+      "id": "c1868ec2-3ba8-44a4-add5-8fab60c7b448",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "RvMzW86X3OrJiR68",
+          "name": "n8n-demo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## email monitoring \n* analyze received emails  \n  * summarization\n  * classification to urgent levels\n  * reasoning the urgent level\n* record into google sheet",
+        "height": 576,
+        "width": 1712
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -448,
+        -176
+      ],
+      "typeVersion": 1,
+      "id": "6eeb67cb-b46e-4334-9c9c-96500ef913ee",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "afd59247-bab1-446d-b586-23e8830ac77a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bda4cece78f4009940a1af80ab6334b307df383c46d9a024d2da6004cff8a8e9"
+  },
+  "id": "NkSkDes9OInSz0Vf",
+  "tags": []
+}

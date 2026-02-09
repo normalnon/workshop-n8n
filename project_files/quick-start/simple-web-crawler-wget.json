@@ -1,0 +1,113 @@
+{
+  "name": "simple-web-crawler-wget",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "web crawler",
+        "formDescription": "url page ที่ต้องการเก็บข้อมูล",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Title"
+            },
+            {
+              "fieldLabel": "URL",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        176,
+        144
+      ],
+      "id": "7e3c539e-8717-4af4-8149-3702af39837a",
+      "name": "On form submission",
+      "webhookId": "3813b497-d760-41c8-bbd5-7dfd25c20dd6"
+    },
+    {
+      "parameters": {
+        "content": "## Simple web crawler with `wget` command\n",
+        "height": 336,
+        "width": 1008
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "db485f38-8371-4c17-85b4-462665c54ddb",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "command": "=wget -O output.html {{ $json.URL }}"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        368,
+        144
+      ],
+      "id": "921d4abc-b7d1-402c-9427-c82923f8b243",
+      "name": "crawl a web to output.html"
+    },
+    {
+      "parameters": {
+        "command": "cat ./output.html"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        592,
+        144
+      ],
+      "id": "9e61844c-bbf9-4d06-bae6-e97317e864e3",
+      "name": "display output.html"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "crawl a web to output.html",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "crawl a web to output.html": {
+      "main": [
+        [
+          {
+            "node": "display output.html",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "display output.html": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4e68df39-60da-4235-ae1d-9d5a548ded89",
+  "meta": {
+    "instanceId": "bda4cece78f4009940a1af80ab6334b307df383c46d9a024d2da6004cff8a8e9"
+  },
+  "id": "OIXrDnYDjFr0xi2A",
+  "tags": []
+}

@@ -1,0 +1,170 @@
+{
+  "name": "nano-banana-03-modify-given-images",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openRouterApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"google/gemini-2.5-flash-image-preview\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"text\",\n          \"text\": \"{{ $json.prompt }}\"\n        },\n        {\n          \"type\": \"image_url\",\n          \"image_url\": {\n            \"url\": \"{{ $json['image 01'] }}\"\n          }\n        },\n        {\n          \"type\": \"image_url\",\n          \"image_url\": {\n            \"url\": \"{{ $json['image 02'] }}\"\n          }\n        }\n      ]\n    }\n  ]\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "91548aa2-3f65-4254-b968-65aaaef213e9",
+      "name": "HTTP Request",
+      "credentials": {
+        "openRouterApi": {
+          "id": "OTgBlqu2eGmzyrfl",
+          "name": "openrouter-demo-with-limit"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "base64",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        0
+      ],
+      "id": "2ea2c118-0873-4cc6-ae17-9e0771445c26",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "26c31ab1-f5b8-4049-b71a-56fdf877a9e3",
+              "name": "data",
+              "value": "={{ $json.choices[0].message.images[0].image_url.url }}",
+              "type": "string"
+            },
+            {
+              "id": "55049604-f98e-4588-bf0c-26c5d0f39671",
+              "name": "base64",
+              "value": "={{ $json.choices[0].message.images[0].image_url.url.split(',')[1] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        0
+      ],
+      "id": "c6ae1a0b-9b86-4406-a9fa-b148dd487b87",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "formTitle": "generate image",
+        "formDescription": "prompt ปรับแต่งรูปจากภาพที่กำหนด",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "prompt",
+              "fieldType": "textarea",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "image 01",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "image 02",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        32,
+        0
+      ],
+      "id": "79e46765-2820-49a0-ae21-d8f650b80e85",
+      "name": "On form submission",
+      "webhookId": "e5343ae0-64df-4e76-8955-3bf64d890d09"
+    },
+    {
+      "parameters": {
+        "content": "## สร้างรูปใหม่จาก input images\n* example\n  * **prompt**: สร้างภาพที่ตัวละครจากรูปที่ 1 สู้กับรูปที่ 2\n  * **image 01**: [url 01](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyaDu5HtQz2wC237qSgZyPghYfK-xEmZzTzRj_WhAatIxz194VZfecb7v4kiDK6kKBmbs&usqp=CAU)\n  * **image 02**: [url 02](https://mir-s3-cdn-cf.behance.net/project_modules/max_632_webp/8f8fcb156747385.636c7d22ec82c.jpg)",
+        "height": 368,
+        "width": 1024
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -80,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "16dd3c85-1504-470f-98a6-ce16d0ee5c0a",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2cacdadb-8975-46ac-91ec-1b7d1ecacd5c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bda4cece78f4009940a1af80ab6334b307df383c46d9a024d2da6004cff8a8e9"
+  },
+  "id": "cW4VnC6zNNfrBjvK",
+  "tags": []
+}

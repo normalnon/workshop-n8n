@@ -1,0 +1,168 @@
+{
+  "name": "nano-banana-02-modify-given-image",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openRouterApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"google/gemini-2.5-flash-image-preview\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"text\",\n          \"text\": \"{{ $json.prompt }}\"\n        },\n        {\n          \"type\": \"image_url\",\n          \"image_url\": {\n            \"url\": \"{{ $json['image 01'] }}\"\n          }\n        }\n      ]\n    }\n  ]\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "8a30514a-7e2f-41c6-9c20-ac618817b04a",
+      "name": "HTTP Request",
+      "credentials": {
+        "openRouterApi": {
+          "id": "OTgBlqu2eGmzyrfl",
+          "name": "openrouter-demo-with-limit"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "base64",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        0
+      ],
+      "id": "760e7ef2-1683-4344-913c-805432b0e6e0",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "26c31ab1-f5b8-4049-b71a-56fdf877a9e3",
+              "name": "data",
+              "value": "={{ $json.choices[0].message.images[0].image_url.url }}",
+              "type": "string"
+            },
+            {
+              "id": "55049604-f98e-4588-bf0c-26c5d0f39671",
+              "name": "base64",
+              "value": "={{ $json.choices[0].message.images[0].image_url.url.split(',')[1] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        0
+      ],
+      "id": "10a0286a-cb32-4c2a-921c-466abb1d1f15",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "formTitle": "generate image",
+        "formDescription": "prompt ปรับแต่งรูปจากภาพที่กำหนด",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "prompt",
+              "fieldType": "textarea",
+              "placeholder": "เปลี่ยนจากหมาให้เป็นเสือดาว",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "image 01",
+              "placeholder": "https://t4.ftcdn.net/jpg/02/16/53/79/360_F_216537946_ODYbV4mHvMYtcpS6zUQ1nilKBkHnaazp.jpg",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        32,
+        0
+      ],
+      "id": "cd677234-bbfd-4dfb-ac26-2de333297d84",
+      "name": "On form submission",
+      "webhookId": "f6bf8240-0deb-4feb-a33c-37a0daae5379"
+    },
+    {
+      "parameters": {
+        "content": "## แก้ไขรูปภาพที่กำหนด\n* example\n  * **prompt**: เปลี่ยนจากหมาให้เป็นเสือดาว\n  * **image**: [url](https://th-thumbnailer.cdn-si-edu.com/-XWkdXDlcI5tbmN0ss0HLe4iXzM=/1026x684/https://tf-cmsv2-smithsonianmag-media.s3.amazonaws.com/filer/1e/1e/1e1e3aea-e930-45d2-9bc4-6dd50cccf66d/istock-511313058.jpg)",
+        "height": 352,
+        "width": 992
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -32,
+        -144
+      ],
+      "typeVersion": 1,
+      "id": "202ee9b7-2e3c-4114-8b50-48a63d3c951c",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "0743221c-0474-41cd-8d43-b46c5fdca6f7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bda4cece78f4009940a1af80ab6334b307df383c46d9a024d2da6004cff8a8e9"
+  },
+  "id": "s7jJN1rqhwxUkt8j",
+  "tags": []
+}

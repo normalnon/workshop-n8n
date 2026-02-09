@@ -1,0 +1,131 @@
+{
+  "name": "basic-loop",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        144,
+        0
+      ],
+      "id": "f76e01ca-922d-4e02-b270-3e39ca51a3a4",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        624,
+        0
+      ],
+      "id": "f1ae2d5b-8519-46f8-b49d-e3024a6381f9",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "urls",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        368,
+        0
+      ],
+      "id": "2decaf85-c887-47ea-bf6f-2dca860332bd",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        912,
+        16
+      ],
+      "id": "7351c7b4-f72a-462a-88fd-e13df74537e7",
+      "name": "Wait",
+      "webhookId": "8f58a9f9-485c-4cf7-bea3-3bb954625422"
+    }
+  ],
+  "pinData": {
+    "When clicking ‘Execute workflow’": [
+      {
+        "json": {
+          "urls": [
+            "https://www.reddit.com",
+            "https://www.n8n.io/",
+            "https://n8n.io/",
+            "https://supabase.com/",
+            "https://duckduckgo.com/"
+          ]
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4060c47e-b374-42da-84ed-8f96c5932909",
+  "meta": {
+    "instanceId": "bda4cece78f4009940a1af80ab6334b307df383c46d9a024d2da6004cff8a8e9"
+  },
+  "id": "zmOViMrS61jCYGmw",
+  "tags": []
+}

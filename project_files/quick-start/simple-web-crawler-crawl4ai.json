@@ -1,0 +1,141 @@
+{
+  "name": "simple-web-crawler-crawl4ai",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "web crawler",
+        "formDescription": "url page ที่ต้องการเก็บข้อมูล",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Title"
+            },
+            {
+              "fieldLabel": "URL",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5d479dec-bdb2-4824-bb2b-e787d6ee4bca",
+      "name": "On form submission",
+      "webhookId": "3813b497-d760-41c8-bbd5-7dfd25c20dd6"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:11235/crawl",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"urls\": [\n    \"{{ $json.URL }}\"\n  ]\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "2e9821f3-66c6-4f5f-a27b-295e116ef4e2",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fa1cba29-5587-43df-a11c-aa72f04c5465",
+              "name": "results[0].success",
+              "value": "={{ $json.results[0].success }}",
+              "type": "boolean"
+            },
+            {
+              "id": "c1c5f0fb-e949-406b-87ba-a3d0a87bf829",
+              "name": "results[0].metadata",
+              "value": "={{ $json.results[0].metadata }}",
+              "type": "object"
+            },
+            {
+              "id": "3e9aaaba-fedf-469c-b633-126b14498c17",
+              "name": "results[0].url",
+              "value": "={{ $json.results[0].url }}",
+              "type": "string"
+            },
+            {
+              "id": "079b9f08-5dd0-4a11-933f-a97dcf24fd26",
+              "name": "results[0].markdown.raw_markdown",
+              "value": "={{ $json.results[0].markdown.raw_markdown }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        0
+      ],
+      "id": "2e17c8ea-6f44-4320-9e91-17ca9a2f6fb4",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "content": "## Simple web crawler with Crawl4AI \n* require:  `Crawl4AI server` installation\n* NOTE: use `host.docker.internal` instead if the self-host `Crawl4AI server` is set\n",
+        "height": 336,
+        "width": 1008
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        -144
+      ],
+      "typeVersion": 1,
+      "id": "341ae7f8-c015-4b84-bb11-266dd57c3a1a",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c2196b9c-c6bd-4ce5-939c-bbc012d8f746",
+  "meta": {
+    "instanceId": "bda4cece78f4009940a1af80ab6334b307df383c46d9a024d2da6004cff8a8e9"
+  },
+  "id": "L4Zz3tLyg33sX3Jy",
+  "tags": []
+}

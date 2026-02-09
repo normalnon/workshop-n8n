@@ -1,0 +1,162 @@
+{
+  "name": "nano-banana-01-generate-image",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openRouterApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"google/gemini-2.5-flash-image-preview\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"text\",\n          \"text\": \"{{ $json.prompt }}\"\n        }\n      ]\n    }\n  ]\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "e01b42ca-0afd-4459-b98b-91f1bde4c24c",
+      "name": "HTTP Request",
+      "credentials": {
+        "openRouterApi": {
+          "id": "OTgBlqu2eGmzyrfl",
+          "name": "openrouter-demo-with-limit"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "base64",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        0
+      ],
+      "id": "15e831ff-fcb4-4fa6-9a24-53cfb8086994",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "26c31ab1-f5b8-4049-b71a-56fdf877a9e3",
+              "name": "data",
+              "value": "={{ $json.choices[0].message.images[0].image_url.url }}",
+              "type": "string"
+            },
+            {
+              "id": "55049604-f98e-4588-bf0c-26c5d0f39671",
+              "name": "base64",
+              "value": "={{ $json.choices[0].message.images[0].image_url.url.split(',')[1] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        0
+      ],
+      "id": "e10a8943-51f8-4247-887c-890a5acc4a39",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "formTitle": "generate an image ",
+        "formDescription": "สร้างภาพจาก prompt",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "prompt",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "779c876a-a46d-4bde-a4ac-da36f3efbee1",
+      "name": "On form submission",
+      "webhookId": "b0c9dd9a-ff0f-4d03-bc17-ec2ec5f8aac1"
+    },
+    {
+      "parameters": {
+        "content": "## สร้างรูปจาก prompt\n* example\n  * **prompt** : สร้างรูปโดราเอม่อนกำลังกินโดรายากิ ให้ภาพเป็น isometric top-view",
+        "height": 320,
+        "width": 1040
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -112,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "d3ac8cea-68d6-4320-929f-5bc452d1f641",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "31ee8dfa-64ee-4db2-8d2e-b861d813a7fb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bda4cece78f4009940a1af80ab6334b307df383c46d9a024d2da6004cff8a8e9"
+  },
+  "id": "YhggLudJzwnXHchE",
+  "tags": []
+}

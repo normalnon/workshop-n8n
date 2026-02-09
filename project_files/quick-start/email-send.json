@@ -1,0 +1,200 @@
+{
+  "name": "email-send",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "send mail",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "to",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "subject",
+              "placeholder": "untitled",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "message",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e5b1ad09-765a-4ca5-ab94-1d773e15084d",
+      "name": "On form submission",
+      "webhookId": "570adc16-53c1-4ebd-9f24-c31d538e71dd"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.message }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        256,
+        0
+      ],
+      "id": "6deaeb19-6af9-4bc0-b5c8-e14a53079284",
+      "name": "Send a message",
+      "webhookId": "5faf05c9-f307-45ee-bb36-a349f6727ceb",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "tQYJL9oFwFsJjQoQ",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1Ln0YOh2G32XoHPxhWOrjx-8lJPJNqZjA-jCKrehlmHY/",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Ln0YOh2G32XoHPxhWOrjx-8lJPJNqZjA-jCKrehlmHY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "to": "={{ $('On form submission').item.json.to }}",
+            "subject": "={{ $('On form submission').item.json.subject }}",
+            "date": "={{ $('On form submission').item.json.submittedAt.split('T')[0] }}",
+            "message": "={{ $('On form submission').item.json.message }}",
+            "time": "={{ $('On form submission').item.json.submittedAt.split('T')[1].split('.')[0] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "time",
+              "displayName": "time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "from",
+              "displayName": "from",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "to",
+              "displayName": "to",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "subject",
+              "displayName": "subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        512,
+        0
+      ],
+      "id": "68d3e82d-f4da-40a1-a3e4-5574a36a95ff",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "RvMzW86X3OrJiR68",
+          "name": "n8n-demo"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e66eadd9-f334-4cc3-ad5d-fab11784d473",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bda4cece78f4009940a1af80ab6334b307df383c46d9a024d2da6004cff8a8e9"
+  },
+  "id": "oH0CUeq8YmZX6wu9",
+  "tags": []
+}

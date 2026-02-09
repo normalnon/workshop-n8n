@@ -1,0 +1,72 @@
+{
+  "name": "simple-request",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c8fda0a4-f837-484b-a57d-562990c011bb",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "7b97ad11-6bf2-4059-83a6-1e1f2b405b60",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "content": "## Sample URL\nhttps://api.coingecko.com/api/v3/coins/markets?vs_currency=usd"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        144,
+        -176
+      ],
+      "typeVersion": 1,
+      "id": "1da59f25-5a9a-48cd-a909-447317d0a0d2",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "63d5e0e8-dad0-4f00-bdce-aa27b1660ce8",
+  "meta": {
+    "instanceId": "bda4cece78f4009940a1af80ab6334b307df383c46d9a024d2da6004cff8a8e9"
+  },
+  "id": "iY6vTlnMK5q4sZe0",
+  "tags": []
+}
